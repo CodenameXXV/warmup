@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>English Warm-up</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/CodenameXXV/warmup/refs/heads/main/EnWarmUP.png">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -19,6 +20,28 @@
             background: radial-gradient(circle at 20% 30%, rgba(16, 185, 129, 0.15) 0%, transparent 50%),
                         radial-gradient(circle at 80% 70%, rgba(52, 211, 153, 0.1) 0%, transparent 50%);
             pointer-events: none; z-index: 0;
+        }
+
+        /* Стилі для кнопки повного екрану */
+        .fullscreen-btn {
+            position: fixed; top: 15px; right: 15px;
+            width: 42px; height: 42px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            cursor: pointer; z-index: 1100;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(5px);
+        }
+        .fullscreen-btn:hover {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: rgba(16, 185, 129, 0.6);
+            transform: scale(1.05);
+        }
+        .fullscreen-btn svg {
+            width: 24px; height: 24px; fill: white;
+            transition: transform 0.3s ease;
         }
 
         .toggles-container {
@@ -147,7 +170,7 @@
 
         /* Right toggle button */
         .my-questions-toggle-btn {
-            position: fixed; top: 16px;
+            position: fixed; top: 70px; /* Спущено нижче, щоб не заважати кнопці повного екрану */
             background: rgba(255, 107, 107, 0.3); border: 1px solid rgba(255, 107, 107, 0.6);
             border-radius: 10px 0 0 10px; padding: 8px 14px;
             color: white; cursor: pointer; z-index: 998;
@@ -187,6 +210,7 @@
             .features-toggle { padding: 6px 12px; font-size: 0.9em; }
             .my-questions-toggle-btn { display: none !important; }
             .my-questions-input { width: 100%; min-height: 40vh; }
+            .fullscreen-btn { width: 36px; height: 36px; top: 10px; right: 10px; }
         }
 
         .content-wrapper {
@@ -280,7 +304,7 @@
         /* Focus Mode */
         .focus-active .header, .focus-active .toggles-container, .focus-active .level-selector,
         .focus-active .copyright, .focus-active .students-panel, .focus-active .my-questions-panel,
-        .focus-active .my-questions-toggle-btn {
+        .focus-active .my-questions-toggle-btn, .focus-active .fullscreen-btn {
             filter: blur(6px); opacity: 0.45; transition: filter 0.4s ease, opacity 0.4s ease;
         }
         .focus-active .question-card {
@@ -299,10 +323,15 @@
     </style>
 </head>
 <body>
+    <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+        <svg id="fullscreenIcon" viewBox="0 0 24 24">
+            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+        </svg>
+    </button>
+
     <div class="app-container" style="display: flex; flex-direction: column; min-height: 100vh; width: 100%;">
         <div style="display: flex; flex: 1; width: 100%;">
             
-            <!-- Left Panel: Students -->
             <div class="students-panel hidden" id="studentsPanel">
                 <div class="panel-close" onclick="toggleStudents()">✕</div>
                 <div class="class-selector">
@@ -317,7 +346,6 @@
                 </div>
             </div>
 
-            <!-- Main Content -->
             <div class="main-content" id="mainContent">
                 <div class="content-wrapper">
                     <div class="selected-student" id="selectedStudent">
@@ -357,7 +385,6 @@
                 </div>
             </div>
 
-            <!-- Right Panel: My Questions -->
             <div class="my-questions-panel hidden" id="myQuestionsPanel">
                 <div class="panel-close" onclick="toggleQuestionsPanel()">✕</div>
                 <div class="my-questions-section">
@@ -370,7 +397,6 @@
 
         </div>
 
-        <!-- Horizontal Button: controls VISIBILITY only (shown only when mode is ON) -->
         <div class="my-questions-toggle-btn" id="myQuestionsToggleBtn" onclick="toggleQuestionsPanel()" style="display: none;">
             <span class="btn-icon">✕</span> Hide Questions
         </div>
@@ -458,6 +484,31 @@
             let currentClass = null;
             let myQuestionsList = [];
             let calledStudentIndices = [];
+
+            // ФУНКЦІЯ ПОВНОГО ЕКРАНУ
+            function toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log(`Error attempting to enable full-screen mode: ${err.message}`);
+                    });
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                }
+            }
+
+            // Оновлення іконки при зміні режиму екрану
+            document.addEventListener('fullscreenchange', () => {
+                const icon = document.getElementById('fullscreenIcon');
+                if (document.fullscreenElement) {
+                    // Іконка мінімізації (стрілочки всередину)
+                    icon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
+                } else {
+                    // Іконка розширення (стрілочки назовні)
+                    icon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
+                }
+            });
 
             function init() {
                 const savedClasses = localStorage.getItem('ehw_classes');
@@ -631,7 +682,6 @@
                 document.getElementById('questionCounter').textContent = `${t - u} question${(t - u) !== 1 ? 's' : ''} remaining`;
             }
 
-            // ===== ВИПРАВЛЕНО: resetFocus() видалено з початку функції =====
             function refreshQuestion() {
                 const btn = document.querySelector('.refresh-btn');
                 
@@ -692,7 +742,7 @@
 
             document.addEventListener('click', (e) => {
                 if (!document.body.classList.contains('focus-active')) return;
-                if (!e.target.closest('.question-card') && !e.target.closest('.selected-student') && !e.target.closest('.refresh-btn')) resetFocus();
+                if (!e.target.closest('.question-card') && !e.target.closest('.selected-student') && !e.target.closest('.refresh-btn') && !e.target.closest('.fullscreen-btn')) resetFocus();
             });
 
             document.getElementById('myQuestionsInput').addEventListener('input', saveMyQuestions);
@@ -705,6 +755,7 @@
                     if (lv[i]) selectLevel(lv[i]);
                 }
                 if (e.code === 'KeyS' && !e.target.matches('input, textarea')) { e.preventDefault(); toggleStudents(); }
+                if (e.code === 'KeyF' && !e.target.matches('input, textarea')) { e.preventDefault(); toggleFullscreen(); }
             });
 
             window.addEventListener('DOMContentLoaded', init);
